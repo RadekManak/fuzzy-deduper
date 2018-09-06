@@ -135,21 +135,25 @@ def find_duplicates(tokenized_functions, min_similarity, min_kw_count):
                     and func.kw_count >= min_kw_count \
                     and function.kw_count >= min_kw_count:
                 print('-'*50)
-                print(function.file_url, '|', function.name, function.args, 'line:', str(function.line))
-                print(func.file_url, '|', func.name, func.args, 'line:',  str(func.line))
+                print(function.file_url, '|', function.name,
+                      function.args, 'line:', str(function.line))
+                print(func.file_url, '|', func.name,
+                      func.args, 'line:',  str(func.line))
                 print('similarity ratio:', similarity)
         seen.add(function)
 
 
 def main():
     if len(sys.argv) == 4:
-        find_duplicates(load_functions(sys.argv[1]), int(sys.argv[2]), int(sys.argv[3]))
+        find_duplicates(load_functions(sys.argv[1]), int(sys.argv[2]),
+                        int(sys.argv[3]))
     elif len(sys.argv) == 3:
         find_duplicates(load_functions(sys.argv[1]), int(sys.argv[2]), 4)
     elif len(sys.argv) == 2:
         find_duplicates(load_functions(sys.argv[1]), 85, 4)
     else:
-        print('Usage: fuzzy_deduper.py <path-to-folder> <min_similarity>[85] <min_kw_count>[4]')
+        print('Usage: fuzzy_deduper.py <path-to-folder>'
+              ' <min_similarity>[85] <min_kw_count>[4]')
 
 
 if __name__ == '__main__':
