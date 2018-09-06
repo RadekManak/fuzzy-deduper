@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import sys
 import tokenize
 from fuzzywuzzy import fuzz
 import glob
@@ -9,6 +10,15 @@ def load_functions(url):
         parsed_file = parse_functions(filename)
         for func in parsed_file:
             yield func
+
+
+kw_dict = {'and': 'Ұ', 'del': 'ұ', 'from': 'Ҳ', 'not': 'ҳ', 'while': 'Ҵ',
+           'as': 'ҵ', 'elif': 'Ҷ', 'global': 'ҷ', 'or': 'Ҹ', 'with': 'ҹ',
+           'assert': 'Һ', 'else': 'һ', 'if': 'Ҽ', 'pass': 'ҽ', 'yield': 'Ҿ',
+           'break': 'ҿ', 'except': 'Ӏ', 'import': 'Ӂ', 'print': 'ӂ',
+           'class': 'Ӄ', 'exec': 'ӄ', 'in': 'Ӆ', 'raise': 'ӆ', 'continue': 'Ӈ',
+           'finally': 'ӈ', 'is': 'Ӊ', 'return': 'ӊ', 'def': 'Ӌ', 'for': 'ӌ',
+           'lambda': 'Ӎ', 'try': 'ӎ', }
 
 
 def parse_functions(url: str):
@@ -46,7 +56,7 @@ class TokenizedFunction(object):
         self.line = def_token.start[0]
         self.name = parsed_header[0]
         self.args = parsed_header[1]
-        self.flow_word = tokens_to_chars(filter_flow_tokens(self.tokens))
+        self.kw_count = count_keywords(parsed_tokens)
 
     def __repr__(self):
         return repr(self.name) \
@@ -57,7 +67,9 @@ class TokenizedFunction(object):
         return self.name == tokenized_function.name
 
     def similarity_ratio(self, tokenized_function):
-        return fuzz.ratio(self.flow_word, tokenized_function.flow_word)
+        a = create_token_type_word(self.tokens)
+        b = create_token_type_word(tokenized_function.tokens)
+        return fuzz.ratio(a, b)
 
     def equals_params_name(self, tokenized_function) -> bool:
         """ True if functions have the same args regardless of order """
@@ -68,29 +80,22 @@ class TokenizedFunction(object):
             return False
 
 
-def filter_flow_tokens(function_tokens):
-    allowed = {'with', 'for', 'if', 'elif', 'while', 'return', 'in', 'try', 'except'}
-    filtered_tokens = []
+def create_token_type_word(tokens):
+    token_type_word = ''
+    for token in tokens:
+        if token.type == 1 and token.string in kw_dict:
+            token_type_word += kw_dict[token.string]
+        else:
+            token_type_word += chr(token.type)
+    return token_type_word
+
+
+def count_keywords(function_tokens):
+    count = 0
     for token in function_tokens:
-        if token.string in allowed:
-            filtered_tokens.append(token)
-    return filtered_tokens
-
-
-def tokens_to_chars(filtered_tokens):
-    func_word = ''
-    dictionary = {'with': '0',
-                  'for': '1',
-                  'if': '2',
-                  'elif': '3',
-                  'while': '4',
-                  'return': '5',
-                  'in': '6',
-                  'try': '7',
-                  'except': '8'}
-    for token in filtered_tokens:
-        func_word += dictionary[token.string]
-    return func_word
+        if token.string in kw_dict:
+            count += 1
+    return count
 
 
 def parse_function_header(function_tokens):
@@ -125,12 +130,14 @@ def find_duplicates(tokenized_functions, minimum):
     seen = set()
     for function in tokenized_functions:
         for func in seen:
-            if function.similarity_ratio(func) >= minimum and len(function.flow_word) > 8 and len(func.flow_word) > 8:
-                if function.name != '__init__':
-                    print(function.file_url, function.name, function.line)
-                    print(func.file_url, func.name, 'line:',  func.line)
-                    print('similarity ratio', function.similarity_ratio(func))
-                    print('-'*40)
+            similarity = function.similarity_ratio(func)
+            if similarity >= minimum and func.kw_count >= 4 and function.kw_count >= 4:
+                print(len(function.tokens), len(func.tokens),
+                      function.kw_count, func.kw_count)
+                print(function.file_url, function.name, 'line:' + str(function.line))
+                print(func.file_url, func.name, 'line:'+ str(func.line))
+                print('similarity ratio', similarity)
+                print('-' * 40)
         seen.add(function)
 
 
@@ -138,11 +145,10 @@ def main():
     if len(sys.argv) == 3:
         find_duplicates(load_functions(sys.argv[1]), int(sys.argv[2]))
     elif len(sys.argv) == 2:
-        find_duplicates(load_functions(sys.argv[1]), 75)
+        find_duplicates(load_functions(sys.argv[1]), 85)
     else:
         print('Usage: unnamed.py <path-to-folder>')
 
 
 if __name__ == '__main__':
-    import sys
     main()
