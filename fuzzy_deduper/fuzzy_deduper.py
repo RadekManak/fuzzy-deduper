@@ -6,7 +6,12 @@ import glob
 
 
 def load_functions(url: str):
-    for filename in glob.iglob(url + '/**/*.py', recursive=True):
+    file_list = []
+    if url.endswith('.py'):
+        file_list.append(url)
+    else:
+        file_list = glob.iglob(url + '/**/*.py', recursive=True)
+    for filename in file_list:
         parsed_file = parse_functions(filename)
         for func in parsed_file:
             yield func
@@ -158,3 +163,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+0
