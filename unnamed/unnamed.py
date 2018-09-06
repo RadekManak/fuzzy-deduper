@@ -5,7 +5,7 @@ from fuzzywuzzy import fuzz
 import glob
 
 
-def load_functions(url):
+def load_functions(url: str):
     for filename in glob.iglob(url + '/**/*.py', recursive=True):
         parsed_file = parse_functions(filename)
         for func in parsed_file:
@@ -134,12 +134,10 @@ def find_duplicates(tokenized_functions, min_similarity, min_kw_count):
             if similarity >= min_similarity \
                     and func.kw_count >= min_kw_count \
                     and function.kw_count >= min_kw_count:
-                print(len(function.tokens), len(func.tokens),
-                      function.kw_count, func.kw_count)
-                print(function.file_url, function.name, 'line:' + str(function.line))
-                print(func.file_url, func.name, 'line:'+ str(func.line))
-                print('similarity ratio', similarity)
-                print('-' * 40)
+                print('-'*50)
+                print(function.file_url, '|', function.name, function.args, 'line:', str(function.line))
+                print(func.file_url, '|', func.name, func.args, 'line:',  str(func.line))
+                print('similarity ratio:', similarity)
         seen.add(function)
 
 
