@@ -149,7 +149,7 @@ def main():
     elif len(sys.argv) == 2:
         find_duplicates(load_functions(sys.argv[1]), 85, 4)
     else:
-        print('Usage: unnamed.py <path-to-folder> <min_similarity>[85] <min_kw_count>[4]')
+        print('Usage: fuzzy_deduper.py <path-to-folder> <min_similarity>[85] <min_kw_count>[4]')
 
 
 if __name__ == '__main__':
