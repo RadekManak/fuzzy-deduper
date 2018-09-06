@@ -126,12 +126,14 @@ def parse_function_header(function_tokens):
             args.append(token.string)
 
 
-def find_duplicates(tokenized_functions, minimum):
+def find_duplicates(tokenized_functions, min_similarity, min_kw_count):
     seen = set()
     for function in tokenized_functions:
         for func in seen:
             similarity = function.similarity_ratio(func)
-            if similarity >= minimum and func.kw_count >= 4 and function.kw_count >= 4:
+            if similarity >= min_similarity \
+                    and func.kw_count >= min_kw_count \
+                    and function.kw_count >= min_kw_count:
                 print(len(function.tokens), len(func.tokens),
                       function.kw_count, func.kw_count)
                 print(function.file_url, function.name, 'line:' + str(function.line))
@@ -142,12 +144,14 @@ def find_duplicates(tokenized_functions, minimum):
 
 
 def main():
-    if len(sys.argv) == 3:
-        find_duplicates(load_functions(sys.argv[1]), int(sys.argv[2]))
+    if len(sys.argv) == 4:
+        find_duplicates(load_functions(sys.argv[1]), int(sys.argv[2]), int(sys.argv[3]))
+    elif len(sys.argv) == 3:
+        find_duplicates(load_functions(sys.argv[1]), int(sys.argv[2]), 4)
     elif len(sys.argv) == 2:
-        find_duplicates(load_functions(sys.argv[1]), 85)
+        find_duplicates(load_functions(sys.argv[1]), 85, 4)
     else:
-        print('Usage: unnamed.py <path-to-folder>')
+        print('Usage: unnamed.py <path-to-folder> <min_similarity>[85] <min_kw_count>[4]')
 
 
 if __name__ == '__main__':
