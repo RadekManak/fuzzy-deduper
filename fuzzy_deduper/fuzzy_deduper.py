@@ -19,11 +19,6 @@ class TokenizedFunction:
         self.args = parsed_header[1]
         self.kw_count = count_keywords(parsed_tokens)
 
-    def __repr__(self):
-        """:returns function name and arguments."""
-        return repr(self.name) \
-               + "(" + repr(self.args) + ")\n"
-
     def similarity_ratio(self, tokenized_function) -> int:
         """Use edit distance to calculate similarity ratio.
 
